@@ -28,7 +28,7 @@ const SECURITY_HEADERS = {
   'Referrer-Policy': 'same-origin',
   // GA4 (gtag.js): skrypt z googletagmanager.com, beacony do google-analytics.com;
   // frame-src: osadzone odtwarzacze YouTube w podglądzie artysty
-  'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-src https://www.youtube-nocookie.com https://www.youtube.com",
+  'Content-Security-Policy': "default-src 'self'; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline'; script-src 'self' https://www.googletagmanager.com 'sha256-OhCII+Mr7P6ThF3cyyHciMdO0I8XtsO3louTDyAK/L4='; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-src https://www.youtube-nocookie.com https://www.youtube.com",
 };
 
 function send(res, status, body, headers = {}) {
