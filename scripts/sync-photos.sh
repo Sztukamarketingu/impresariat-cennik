@@ -27,7 +27,7 @@ const AK=process.env.AIRTABLE_API_KEY, BASE=\"app5NIUbshNL31ylr\", TABLE=\"Cenni
 (async()=>{
   let offset=\"\", out=[];
   do {
-    const u=\`https://api.airtable.com/v0/\${BASE}/\${encodeURIComponent(TABLE)}?filterByFormula=\${encodeURIComponent(\"{Widoczność w aplikacji}=TRUE()\")}&pageSize=100\`+(offset?\`&offset=\${offset}\`:\"\");
+    const u=\`https://api.airtable.com/v0/\${BASE}/\${encodeURIComponent(TABLE)}?pageSize=100\`+(offset?\`&offset=\${offset}\`:\"\");
     const r=await fetch(u,{headers:{Authorization:\`Bearer \${AK}\`}}); const j=await r.json();
     for(const rec of j.records||[]){
       const m=String(rec.fields[\"Zdjęcie główne\"]||\"\").match(/[-\\w]{25,}/);
