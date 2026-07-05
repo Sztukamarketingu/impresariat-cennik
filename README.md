@@ -29,7 +29,7 @@ Wymaga wcześniejszego przygotowania bazy — patrz `airtable/AIRTABLE-SETUP.md`
 ## Deploy na VPS
 
 `./deploy.sh` + snippet z `docker-compose.snippet.yml` do `/docker/openclaw-jb6z/docker-compose.yml`.
-Subdomena/HTTPS: `Caddyfile.snippet`. Szczegóły i pułapki: `PLAN.md`.
+Subdomena/HTTPS: Traefik (labels w docker-compose na VPS), domena `cennik.impresariatkoncertowy.pl`. Szczegóły i pułapki: `PLAN.md`.
 
 ## Architektura
 
@@ -59,4 +59,4 @@ ani kontaktów managerów.
 | `n8n/` | workflow do importu + dokumentacja |
 | `airtable/AIRTABLE-SETUP.md` | checklist zmian schematu Airtable |
 | `scripts/sync-photos.sh` | plan B na zdjęcia (gog → cache), gdy Drive nie jest publiczny |
-| `deploy.sh`, `Dockerfile`, `docker-compose.snippet.yml`, `Caddyfile.snippet` | wdrożenie |
+| `deploy.sh`, `Dockerfile`, `docker-compose.snippet.yml` | wdrożenie |
