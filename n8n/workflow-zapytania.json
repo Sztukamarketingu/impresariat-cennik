@@ -246,7 +246,7 @@
         "url": "={{ $env.BITRIX24_REST_URL_ANATOL }}/crm.deal.add.json",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ fields: {\n  TITLE: $('Walidacja i normalizacja').first().json.title,\n  CATEGORY_ID: 9,\n  STAGE_ID: 'C9:NEW',\n  ASSIGNED_BY_ID: 19,\n  SOURCE_ID: 'WEB',\n  CONTACT_ID: $json.contactId,\n  COMMENTS: $('Walidacja i normalizacja').first().json.comments\n} }) }}",
+        "jsonBody": "={{ JSON.stringify({ fields: {\n  TITLE: $('Walidacja i normalizacja').first().json.title,\n  CATEGORY_ID: 9,\n  STAGE_ID: 'C9:NEW',\n  ASSIGNED_BY_ID: 19,\n  SOURCE_ID: 'WEB',\n  CONTACT_ID: $json.contactId,\n  COMPANY_ID: $json.companyId || 0,\n  COMMENTS: $('Walidacja i normalizacja').first().json.comments\n} }) }}",
         "options": {}
       },
       "id": "bx-deal",
@@ -518,7 +518,7 @@
     {
       "parameters": {
         "sendTo": "={{ $('Walidacja i normalizacja').first().json.email }}",
-        "subject": "={{ 'Dziękuję za zapytanie — ' + ($('Walidacja i normalizacja').first().json.artistNames.concat($('Walidacja i normalizacja').first().json.customArtists).join(', ') || 'dobór artystów') + ' | Impresariat Koncertowy' }}",
+        "subject": "={{ 'Dziękuję za zapytanie — ' + (($('Walidacja i normalizacja').first().json.eventTypes || []).join(', ') || 'wycena występu artysty') + ($('Walidacja i normalizacja').first().json.dateDDMM ? ', ' + $('Walidacja i normalizacja').first().json.dateDDMM : '') + ' | Impresariat Koncertowy' }}",
         "emailType": "html",
         "message": "={{ (() => {\nconst w = $('Walidacja i normalizacja').first().json;\nconst esc = (s) => String(s ?? '').replace(/[&<>\"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));\nconst artists = w.artistNames.concat(w.customArtists);\nconst rows = [];\nif (w.eventTypes.length) rows.push(['Rodzaj wydarzenia', w.eventTypes.join(', ')]);\nif (w.occasion) rows.push(['Okazja', w.occasion]);\nif (w.programsStr) rows.push(['Program', w.programsStr]);\nrows.push(['Termin', w.dateDDMM || 'do ustalenia']);\nif (w.city && w.city !== 'miejscowosc nieznana') rows.push(['Miejscowość', w.city]);\nrows.push(['Wybrani artyści', artists.join(', ') || 'dobierzemy propozycje']);\nif (w.budget && w.budget !== 'nie określono') rows.push(['Budżet', w.budget]);\nconst P = 'style=\"margin:0 0 12px;font-family:Arial,sans-serif;font-size:15px;color:#222;line-height:1.5;\"';\nconst html = [\n'<p ' + P + '>Dzień dobry' + (w.firstName ? ' ' + esc(w.firstName) : '') + ',</p>',\n'<p ' + P + '>dziękuję za zapytanie wysłane przez nasz cennik artystów. Otrzymałam następujące informacje:</p>',\n'<table style=\"border-collapse:collapse;margin:0 0 14px;\">' + rows.map(([k, v]) =>\n  '<tr><td style=\"padding:2px 14px 2px 0;font-family:Arial,sans-serif;font-size:15px;color:#666;\">' + k + ':</td>' +\n  '<td style=\"padding:2px 0;font-family:Arial,sans-serif;font-size:15px;color:#222;\"><b>' + esc(v) + '</b></td></tr>').join('') + '</table>',\n'<p ' + P + '>Sprawdzam teraz dostępność wykonawców w podanym terminie i wrócę z konkretną ofertą.</p>',\n'<p ' + P + '>Jeśli chcieliby Państwo coś doprecyzować, wystarczy odpowiedzieć na tę wiadomość.</p>',\n'<p ' + P + '>Pozdrawiam serdecznie</p>'\n].join('');\nconst SIG = \"<br>\\n <br>\\n<div id=\\\"main_mail_form_crm_act_email_create_form_signature_19ebcd585af\\\">\\n    --<br>\\n    <div style=\\\"width: 100.0%;max-width: 550.0px;\\\">\\n        <table style=\\\"width: 100.0%;max-width: 550.0px;border-collapse: collapse;\\\">\\n        <tbody>\\n        <tr>\\n            <td style=\\\"padding: 0;margin: 0;vertical-align: top;width: 70.0px;border: 0.0px;\\\">\\n                <table style=\\\"width: 100.0%;border-collapse: collapse;\\\">\\n                <tbody>\\n                <tr>\\n                    <td style=\\\"margin: 0;padding-top: 0.0px;padding-bottom: 9.0px;padding-left: 0.0px;padding-right: 12.0px;text-align: left;border: 0.0px;\\\">\\n <img width=\\\"74\\\" src=\\\"https://cdn.emailbadge.com/media/8gL7IQch3ZPKDwM07bDgYamXb2JWadETsfd4CZYU.jpg\\\" style=\\\"border-radius: 10.0px;\\\" alt=\\\"\\\">\\n                    </td>\\n                </tr>\\n                </tbody>\\n                </table>\\n            </td>\\n            <td style=\\\"padding: 0;margin: 0;vertical-align: top;border: 0.0px;\\\">\\n                <table style=\\\"width: 100.0%;border-collapse: collapse;\\\">\\n                <tbody>\\n                <tr>\\n                    <td style=\\\"margin: 0;padding: 0;padding-top: 0.0px;padding-bottom: 6.0px;padding-left: 0.0px;padding-right: 0.0px;border: 0.0px;\\\">\\n                        <p style=\\\"line-height: 1.2;margin: 0;text-align: left;font-weight: normal;font-style: normal;text-decoration: none;font-family: Arial;font-size: 16.0px;color: #000000;\\\">\\n                             Dyrektor Artystyczny&nbsp;\\n                        </p>\\n                        <p style=\\\"line-height: 1.2;margin: 0;text-align: left;font-weight: normal;font-style: normal;text-decoration: none;font-family: Arial;font-size: 16.0px;color: #000000;\\\">\\n                             Joanna Kwaśnik&nbsp;\\n                        </p>\\n                    </td>\\n                </tr>\\n                <tr>\\n                    <td style=\\\"margin: 0;padding-top: 0.0px;padding-bottom: 0.0px;padding-left: 0.0px;padding-right: 0.0px;border: 0.0px;\\\">\\n                        <table style=\\\"border-collapse: collapse;width: 100.0%;max-width: 550.0px;\\\">\\n                        <tbody>\\n                        <tr style=\\\"vertical-align: middle;\\\">\\n                            <td style=\\\"margin: 0;padding: 5.0px;text-align: center;border: 0.0px;width: 25.0px;line-height: 1.2;\\\">\\n <img width=\\\"15\\\" alt=\\\"phone-volume\\\" src=\\\"https://asset.emailbadge.com/customize-image?icon=phone-volume&color=%23000000&size=md\\\">\\n                            </td>\\n                            <td style=\\\"margin: 0;padding: 0;font-size: 16.0px;text-align: left;font-weight: normal;font-style: normal;text-decoration: none;font-family: Arial;color: #000000;border: 0.0px;\\\">\\n                                <p style=\\\"margin: 0;padding: 0;text-align: left;line-height: 1.2;color: #000000;\\\">\\n <a style=\\\"text-decoration: none;color: #000000;\\\" href=\\\"http://+4878845094\\\"> 788 457 094 </a>\\n                                </p>\\n                            </td>\\n                        </tr>\\n                        </tbody>\\n                        </table>\\n                    </td>\\n                </tr>\\n                <tr>\\n                    <td style=\\\"margin: 0;padding: 0;padding-top: 0.0px;padding-bottom: 21.0px;padding-left: 0.0px;padding-right: 0.0px;border: 0.0px;\\\">\\n                        <p style=\\\"line-height: 1.2;margin: 0;text-align: left;font-weight: normal;font-style: normal;text-decoration: underline;font-family: Arial;font-size: 16.0px;color: #000000;\\\">\\n <a style=\\\"text-decoration: none;color: #000000;\\\" href=\\\"https://impresariatkoncertowy.pl/\\\"> www.ImpresariatKoncertowy.pl </a>\\n                        </p>\\n                    </td>\\n                </tr>\\n                <tr>\\n                    <td style=\\\"padding-top: 0.0px;padding-bottom: 0.0px;padding-left: 0.0px;padding-right: 0.0px;margin: 0;border: 0.0px;\\\">\\n                        <table style=\\\"border-collapse: collapse;width: auto;max-width: 550.0px;margin: 0;padding: 0;\\\">\\n                        <tbody>\\n                        <tr>\\n                            <td style=\\\"padding-top: 10.0px;padding-bottom: 10.0px;padding-left: 15.0px;padding-right: 15.0px;font-weight: normal;font-style: normal;font-family: Arial;font-size: 16.0px;line-height: 1.2;text-align: center;border-radius: 5.0px;background-color: #2286d3;color: #ffffff;margin: 0;vertical-align: middle;border: 0.0px;\\\">\\n <a href=\\\"https://cb24.me/s/rh\\\" style=\\\"text-decoration: none;line-height: 1.2;margin: 0;padding: 0;color: #ffffff;\\\"> Call me now </a>\\n                            </td>\\n                        </tr>\\n                        </tbody>\\n                        </table>\\n                    </td>\\n                </tr>\\n                </tbody>\\n                </table>\\n            </td>\\n        </tr>\\n        </tbody>\\n        </table>\\n    </div>\\n <br>\\n</div>\\n<br>\\n<br>\\n\";\nreturn html + SIG;\n})() }}",
         "options": {
@@ -539,6 +539,19 @@
           "name": "Joanna.k@impresariatkoncertowy.pl"
         }
       }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Wzbogacenie CRM (best-effort): bezimienny kontakt dostaje dane organizatora,\n// firma jest znajdowana po nazwie albo tworzona i podpinana do kontaktu + deala.\nconst base = $env.BITRIX24_REST_URL_ANATOL;\nconst w = $('Walidacja i normalizacja').first().json;\nconst contactId = $json.contactId;\nconst req = (m, body) => this.helpers.httpRequest({ method: 'POST', url: base + '/' + m + '.json', body, json: true });\nlet companyId = 0;\ntry {\n  const c = await req('crm.contact.get', { id: contactId });\n  const cf = c.result || {};\n  const upd = {};\n  if (!cf.NAME && !cf.LAST_NAME && w.firstName) { upd.NAME = w.firstName; if (w.lastName) upd.LAST_NAME = w.lastName; }\n  if (!cf.COMPANY_TITLE && !cf.COMPANY_ID && w.company) upd.COMPANY_TITLE = w.company;\n  if (Object.keys(upd).length) await req('crm.contact.update', { id: contactId, fields: upd });\n  if (w.company) {\n    const found = await req('crm.company.list', { filter: { '=TITLE': w.company }, select: ['ID'] });\n    if (found.result && found.result.length) companyId = Number(found.result[0].ID);\n    else {\n      const created = await req('crm.company.add', { fields: {\n        TITLE: w.company, ASSIGNED_BY_ID: 19,\n        PHONE: w.phone ? [{ VALUE: w.phone, VALUE_TYPE: 'WORK' }] : [],\n        EMAIL: [{ VALUE: w.email, VALUE_TYPE: 'WORK' }],\n        COMMENTS: 'Organizator z aplikacji cennik.impresariatkoncertowy.pl',\n      } });\n      companyId = Number(created.result || 0);\n    }\n    if (companyId && !cf.COMPANY_ID) await req('crm.contact.update', { id: contactId, fields: { COMPANY_ID: companyId } });\n  }\n} catch (e) { /* wzbogacenie nie moze zablokowac deala */ }\nreturn [{ json: { contactId, companyId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1580,
+        -220
+      ],
+      "name": "Bitrix: kontakt i firma"
     }
   ],
   "connections": {
@@ -626,7 +639,7 @@
       "main": [
         [
           {
-            "node": "Bitrix: crm.deal.add",
+            "node": "Bitrix: kontakt i firma",
             "type": "main",
             "index": 0
           }
@@ -648,7 +661,7 @@
       "main": [
         [
           {
-            "node": "Bitrix: crm.deal.add",
+            "node": "Bitrix: kontakt i firma",
             "type": "main",
             "index": 0
           }
@@ -766,6 +779,17 @@
         [
           {
             "node": "Hook do Anatola (intake)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitrix: kontakt i firma": {
+      "main": [
+        [
+          {
+            "node": "Bitrix: crm.deal.add",
             "type": "main",
             "index": 0
           }
