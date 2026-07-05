@@ -461,6 +461,44 @@ function validateOrganizer() {
   return false;
 }
 
+// walidacja domeny e-mail (MX) + podpowiedź literówki; awaria = przepuszczamy (fail-open)
+async function checkEmailDomain(email) {
+  try {
+    const r = await fetch(`/api/check-email?email=${encodeURIComponent(email)}`, { signal: AbortSignal.timeout(4000) });
+    return await r.json();
+  } catch { return { ok: true, suggestion: null }; }
+}
+
+let emailWarnedFor = ''; // przy podpowiedzi zatrzymujemy tylko raz — drugi klik "Dalej" przepuszcza
+async function handleOrganizerNext(btn) {
+  if (!validateOrganizer()) return;
+  const oldLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Sprawdzam…';
+  const res = await checkEmailDomain(state.organizer.email);
+  btn.disabled = false; btn.textContent = oldLabel;
+
+  const field = document.querySelector('.field[data-field="email"]');
+  const sug = $('#email-suggest');
+  if (res.suggestion) {
+    sug.textContent = `Czy chodziło o …@${res.suggestion}? Kliknij, żeby poprawić.`;
+    sug.dataset.domain = res.suggestion;
+    sug.hidden = false;
+  } else { sug.hidden = true; }
+
+  if (!res.ok) {
+    $('#email-err').textContent = 'Ten adres wygląda na błędny — taka domena nie istnieje. Sprawdź e-mail.';
+    field.classList.add('invalid');
+    return;
+  }
+  if (res.suggestion && emailWarnedFor !== state.organizer.email) {
+    emailWarnedFor = state.organizer.email; // pierwszy raz: pokaż podpowiedź; ponowny klik = przejście
+    return;
+  }
+  field.classList.remove('invalid');
+  registerLead();
+  show('termin');
+}
+
 // po pierwszym kroku od razu zakładamy lead w Bitrix — nawet jeśli organizator
 // nie dokończy zapytania, zespół ma kontakt; wysłane zapytanie konwertuje lead w deal
 async function registerLead() {
@@ -573,7 +611,15 @@ document.addEventListener('click', (e) => {
   const action = t.dataset.action;
   if (action === 'start') { ensureCatalog(); show('organizer'); return; }
   if (action === 'back') { goBack(); return; }
-  if (action === 'organizer-next') { if (validateOrganizer()) { registerLead(); show('termin'); } return; }
+  if (action === 'organizer-next') { handleOrganizerNext(t); return; }
+  if (action === 'apply-email-suggest') {
+    const el = $('#f-email');
+    el.value = el.value.replace(/@.*$/, '@' + t.dataset.domain);
+    t.hidden = true;
+    $('#email-err').textContent = 'Podaj poprawny adres e-mail.';
+    document.querySelector('.field[data-field="email"]').classList.remove('invalid');
+    return;
+  }
   if (action === 'termin-next') {
     state.event.date = $('#f-date0').value;
     loadBusy().then(() => { if (state.view === 'katalog') renderCatalog(); });

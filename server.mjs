@@ -7,6 +7,7 @@ import { dirname, join, normalize } from 'node:path';
 import { getCatalog, getBusyIds } from './lib/airtable.mjs';
 import { getPhoto, REC_ID_RE } from './lib/photos.mjs';
 import { handleInquiry, handleLead } from './lib/inquiry.mjs';
+import { checkEmail } from './lib/emailcheck.mjs';
 
 const DIR = dirname(fileURLToPath(import.meta.url));
 const PUBLIC = join(DIR, 'public');
@@ -81,6 +82,13 @@ const server = createServer(async (req, res) => {
       const photo = await getPhoto(recId);
       if (photo) return send(res, 200, photo.buf, { 'Content-Type': photo.mime, 'Cache-Control': `public, max-age=${photo.maxAge}` });
       return send(res, 200, PLACEHOLDER_SVG, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=3600' });
+    }
+
+    // walidacja domeny e-mail (MX) + podpowiedź literówki — bez blokowania na własnych awariach
+    if (path === '/api/check-email' && req.method === 'GET') {
+      const email = url.searchParams.get('email') || '';
+      if (email.length > 200) return sendJson(res, 400, { ok: false, suggestion: null });
+      return sendJson(res, 200, await checkEmail(email));
     }
 
     if (path === '/api/lead' && req.method === 'POST') {

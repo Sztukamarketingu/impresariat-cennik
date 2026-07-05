@@ -76,7 +76,8 @@
       <div class="field" data-field="email">
         <label for="f-email">Adres e-mail</label>
         <input id="f-email" name="email" type="email" autocomplete="email" placeholder="np. kontakt@twojafirma.pl">
-        <span class="err">Podaj poprawny adres e-mail.</span>
+        <span class="err" id="email-err">Podaj poprawny adres e-mail.</span>
+        <button type="button" class="btn-link" id="email-suggest" data-action="apply-email-suggest" hidden></button>
       </div>
       <div class="hp-field" aria-hidden="true">
         <label for="f-website">Strona www (zostaw puste)</label>
