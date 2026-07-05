@@ -104,6 +104,8 @@ function loadSnapshot() {
       if (!Array.isArray(state.busy)) state.busy = [];
       state.organizer = { name: '', company: '', phone: '', email: '', ...(s.organizer || {}) };
       if (state.leadId !== null && typeof state.leadId !== 'string' && typeof state.leadId !== 'number') state.leadId = null;
+      // sesja sprzed wersji z polem "Imię i nazwisko": wróć do formularza (dane zostają wypełnione)
+      if (!state.organizer.name && !['landing', 'organizer'].includes(state.view)) state.view = 'organizer';
       if (typeof state.occasion !== 'string') state.occasion = '';
       if (typeof state.occasionOther !== 'string') state.occasionOther = '';
     }
@@ -325,10 +327,15 @@ function openModal(a) {
     <img class="photo" src="${esc(a.photoUrl)}" alt="${esc(a.name)}">
     <div class="modal-body">
       <h2>${esc(a.name)}</h2>
+      <div class="modal-top-action">
+        <button type="button" class="btn ${picked ? 'btn-secondary' : 'btn-action'}" data-pick="${esc(a.id)}" data-action="close-modal">
+          ${picked ? 'Usuń z zapytania' : '+ Dodaj do zapytania'}
+        </button>
+        <span class="price-badge"><small>orientacyjnie</small>${esc(a.priceRange.label)}</span>
+      </div>
       <div class="genre-tags">${a.styles.map((s) => `<span class="genre-tag">${esc(s)}</span>`).join('')}</div>
       ${(a.programs || []).length ? `<p class="hint" style="margin:2px 0 8px;">Programy: ${a.programs.map(esc).join(' · ')}</p>` : ''}
       <p class="desc">${esc(a.description || a.shortDescription)}</p>
-      <span class="price-badge"><small>orientacyjny zakres cenowy</small>${esc(a.priceRange.label)}</span>
       ${a.youtube.length ? `<div class="yt-links">
         <p class="hint" style="margin:0 0 2px;">Posłuchaj na żywo:</p>
         ${a.youtube.map((u, i) => ytEmbedHtml(u, i, a.youtube.length)).join('')}</div>` : ''}
@@ -524,6 +531,11 @@ async function submitInquiry() {
 
   const errBox = $('#submit-error');
   errBox.classList.remove('visible');
+  if (!state.organizer.name || !state.organizer.email) {
+    // niekompletne dane organizatora (np. stara sesja) — wróć do formularza zamiast błędu na końcu
+    show('organizer');
+    return;
+  }
   const postal = state.event.postalCode.replace(/\s/g, '');
   if (postal && !/^\d{2}-?\d{3}$/.test(postal)) {
     document.querySelector('.field[data-field="postal"]').classList.add('invalid');
