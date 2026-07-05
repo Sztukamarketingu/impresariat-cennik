@@ -10,7 +10,8 @@ gtag('config', 'G-MN652H7DZM');
 /* ---------- stan ---------- */
 const state = {
   view: 'landing',
-  organizer: { company: '', phone: '', email: '' },
+  organizer: { name: '', company: '', phone: '', email: '' },
+  leadId: null,            // lead w Bitrix założony po kroku danych organizatora
   eventTypes: [],
   budget: null,            // { label, ceil } | null
   styles: [],
@@ -101,6 +102,8 @@ function loadSnapshot() {
       for (const k of Object.keys(state.event)) if (state.event[k] == null) state.event[k] = '';
       if (!Array.isArray(state.programs)) state.programs = [];
       if (!Array.isArray(state.busy)) state.busy = [];
+      state.organizer = { name: '', company: '', phone: '', email: '', ...(s.organizer || {}) };
+      if (state.leadId !== null && typeof state.leadId !== 'string' && typeof state.leadId !== 'number') state.leadId = null;
       if (typeof state.occasion !== 'string') state.occasion = '';
       if (typeof state.occasionOther !== 'string') state.occasionOther = '';
     }
@@ -438,10 +441,12 @@ function renderSummary() {
 
 /* ---------- walidacja organizatora ---------- */
 function validateOrganizer() {
+  const name = $('#f-contact-name').value.trim();
   const company = $('#f-company').value.trim();
   const phoneDigits = $('#f-phone').value.replace(/[\s\-().]/g, '').replace(/^\+?48/, '');
   const email = $('#f-email').value.trim();
   const results = {
+    contactName: name.length >= 3,
     company: company.length >= 2,
     phone: /^\d{9}$/.test(phoneDigits),
     email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email),
@@ -450,10 +455,24 @@ function validateOrganizer() {
     document.querySelector(`.field[data-field="${key}"]`)?.classList.toggle('invalid', !ok);
   }
   if (Object.values(results).every(Boolean)) {
-    state.organizer = { company, phone: $('#f-phone').value.trim(), email };
+    state.organizer = { name, company, phone: $('#f-phone').value.trim(), email };
     return true;
   }
   return false;
+}
+
+// po pierwszym kroku od razu zakładamy lead w Bitrix — nawet jeśli organizator
+// nie dokończy zapytania, zespół ma kontakt; wysłane zapytanie konwertuje lead w deal
+async function registerLead() {
+  if (state.leadId) return;
+  try {
+    const r = await fetch('/api/lead', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organizer: state.organizer, website: $('#f-website').value }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (j.leadId) { state.leadId = j.leadId; saveSnapshot(); }
+  } catch { /* lead jest best-effort, nie blokuje przejścia dalej */ }
 }
 
 /* ---------- wysyłka ---------- */
@@ -493,6 +512,7 @@ async function submitInquiry() {
     customArtists: state.selected.filter((a) => a.custom).map((a) => a.name),
     event: state.event,
     message: state.message,
+    leadId: state.leadId,
     website: $('#f-website').value, // honeypot
   };
 
@@ -553,7 +573,7 @@ document.addEventListener('click', (e) => {
   const action = t.dataset.action;
   if (action === 'start') { ensureCatalog(); show('organizer'); return; }
   if (action === 'back') { goBack(); return; }
-  if (action === 'organizer-next') { if (validateOrganizer()) show('termin'); return; }
+  if (action === 'organizer-next') { if (validateOrganizer()) { registerLead(); show('termin'); } return; }
   if (action === 'termin-next') {
     state.event.date = $('#f-date0').value;
     loadBusy().then(() => { if (state.view === 'katalog') renderCatalog(); });
@@ -718,6 +738,7 @@ loadSnapshot();
 ensureCatalog();
 show(state.view === 'confirm' ? 'landing' : state.view, { push: false });
 // przywróć dane organizatora do pól po odświeżeniu
+if (state.organizer.name) $('#f-contact-name').value = state.organizer.name;
 if (state.organizer.company) $('#f-company').value = state.organizer.company;
 if (state.organizer.phone) $('#f-phone').value = state.organizer.phone;
 if (state.organizer.email) $('#f-email').value = state.organizer.email;

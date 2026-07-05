@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Auth + walidacja + normalizacja + budowa TITLE/COMMENTS (BEZ EMOJI!)\nconst headers = $input.first().json.headers || {};\nconst body = $input.first().json.body || {};\n\nif (!$env.INQUIRY_SHARED_TOKEN || headers['x-inquiry-token'] !== $env.INQUIRY_SHARED_TOKEN) {\n  return [{ json: { _error: 'auth', _status: 403 } }];\n}\nconst org = body.organizer || {};\nif (!org.email || !org.company || (!Array.isArray(body.artists) || !body.artists.length) && (!Array.isArray(body.customArtists) || !body.customArtists.length)) {\n  return [{ json: { _error: 'validation', _status: 400 } }];\n}\n\n// defensywny strip emoji (Bitrix po cichu gubi pola z emoji)\nconst strip = (s) => String(s ?? '').replace(/[\\u{10000}-\\u{10FFFF}]/gu, '').replace(/[\\u2600-\\u27BF\\u2B00-\\u2BFF\\uFE0F\\u200D]/g, '').trim();\n\nconst city = strip(body.event?.city) || 'miejscowosc nieznana';\nlet dateDDMM = '';\nconst dISO = String(body.event?.date || '');\nif (/^\\d{4}-\\d{2}-\\d{2}$/.test(dISO)) { const [y, m, d] = dISO.split('-'); dateDDMM = `${d}.${m}.${y}`; }\nconst styles = (body.styles || []).map(strip).filter(Boolean);\nconst stylesStr = styles.join(', ') || 'rozne style';\nconst programs = (body.programs || []).map(strip).filter(Boolean);\nconst occasion = strip(body.occasion);\nconst artists = (body.artists || []).map((a) => ({ name: strip(a.name), price: strip(a.priceLabel), busy: !!a.busy }));\nconst custom = (body.customArtists || []).map(strip).filter(Boolean);\n\n// TITLE zgodny z regexem generatora ofert: Organizator: {miasto} {DD.MM.YYYY} — {gatunek} ({nazwa})\nconst title = `Organizator: ${city}${dateDDMM ? ' ' + dateDDMM : ''} — ${stylesStr} (${strip(org.company)})`;\n\nconst now = new Date();\nconst lines = [\n  'ZAPYTANIE Z APLIKACJI GENERATOR ZAPYTAN',\n  `Data zgloszenia: ${now.toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}`,\n  '',\n  'ORGANIZATOR',\n  `Firma/instytucja: ${strip(org.company)}`,\n  `Telefon: ${strip(org.phone)}`,\n  `E-mail: ${strip(org.email)}`,\n  '',\n  'WYDARZENIE',\n  `Typ: ${(body.eventTypes || []).map(strip).join(', ') || 'nie podano'}`,\n  ...(occasion ? [`Okazja: ${occasion}`] : []),\n  ...(programs.length ? [`Program: ${programs.join(', ')}`] : []),\n  `Data: ${dateDDMM || 'nie podano'}`,\n  `Miejscowość: ${city}${strip(body.event?.postalCode) ? ', ' + strip(body.event?.postalCode) : ''}`,\n  `Województwo: ${strip(body.event?.voivodeship) || 'nie podano'}`,\n  `Miejsce: ${strip(body.event?.venueType) || 'nie podano'}`,\n  `Budżet: ${strip(body.budget) || 'nie podano'}`,\n  '',\n  'WYBRANI ARTYSCI (zapytanie o dostepnosc)',\n  ...(artists.length ? artists.map((a, i) => `${i + 1}. ${a.name}${a.price ? ' (orientacyjnie ' + a.price + ')' : ''}${a.busy ? ' — UWAGA: ZAJETY TERMIN, nie wysylac zapytania' : ''}`) : ['brak']),\n];\nif (custom.length) {\n  lines.push('', 'ARTYSCI SPOZA BAZY (do weryfikacji)');\n  custom.forEach((n, i) => lines.push(`${i + 1}. ${n}`));\n}\nlines.push('', `STYLE: ${stylesStr}`);\nif (strip(body.message)) lines.push('', 'WIADOMOSC:', strip(body.message));\n\nreturn [{ json: {\n  title,\n  comments: lines.join('\\n'),\n  company: strip(org.company), phone: strip(org.phone), email: strip(org.email).toLowerCase(),\n  eventTypes: (body.eventTypes || []).map(strip), budget: strip(body.budget),\n  styles, stylesStr,\n  programs, programsStr: programs.join(', '), occasion,\n  artistNames: artists.map((a) => a.name), customArtists: custom,\n  eventDate: dISO, dateDDMM, city,\n  postalCode: strip(body.event?.postalCode), voivodeship: strip(body.event?.voivodeship),\n  venueType: strip(body.event?.venueType),\n  message: strip(body.message),\n} }];"
+        "jsCode": "// Auth + walidacja + normalizacja + budowa TITLE/COMMENTS (BEZ EMOJI!)\nconst headers = $input.first().json.headers || {};\nconst body = $input.first().json.body || {};\n\nif (!$env.INQUIRY_SHARED_TOKEN || headers['x-inquiry-token'] !== $env.INQUIRY_SHARED_TOKEN) {\n  return [{ json: { _error: 'auth', _status: 403 } }];\n}\nconst org = body.organizer || {};\nif (!org.email || !org.company || (!Array.isArray(body.artists) || !body.artists.length) && (!Array.isArray(body.customArtists) || !body.customArtists.length)) {\n  return [{ json: { _error: 'validation', _status: 400 } }];\n}\n\n// defensywny strip emoji (Bitrix po cichu gubi pola z emoji)\nconst strip = (s) => String(s ?? '').replace(/[\\u{10000}-\\u{10FFFF}]/gu, '').replace(/[\\u2600-\\u27BF\\u2B00-\\u2BFF\\uFE0F\\u200D]/g, '').trim();\n\nconst contactName = strip(org.name);\nconst nameParts = contactName.split(/\\s+/).filter(Boolean);\nconst firstName = nameParts[0] || strip(org.company);\nconst lastName = nameParts.slice(1).join(' ');\nconst leadId = /^\\d{1,10}$/.test(String(body.leadId ?? '')) ? String(body.leadId) : '';\nconst city = strip(body.event?.city) || 'miejscowosc nieznana';\nlet dateDDMM = '';\nconst dISO = String(body.event?.date || '');\nif (/^\\d{4}-\\d{2}-\\d{2}$/.test(dISO)) { const [y, m, d] = dISO.split('-'); dateDDMM = `${d}.${m}.${y}`; }\nconst styles = (body.styles || []).map(strip).filter(Boolean);\nconst stylesStr = styles.join(', ') || 'rozne style';\nconst programs = (body.programs || []).map(strip).filter(Boolean);\nconst occasion = strip(body.occasion);\nconst artists = (body.artists || []).map((a) => ({ name: strip(a.name), price: strip(a.priceLabel), busy: !!a.busy }));\nconst custom = (body.customArtists || []).map(strip).filter(Boolean);\n\n// TITLE zgodny z regexem generatora ofert: Organizator: {miasto} {DD.MM.YYYY} — {gatunek} ({nazwa})\nconst title = `Organizator: ${city}${dateDDMM ? ' ' + dateDDMM : ''} — ${stylesStr} (${strip(org.company)})`;\n\nconst now = new Date();\nconst lines = [\n  'ZAPYTANIE Z APLIKACJI GENERATOR ZAPYTAN',\n  `Data zgloszenia: ${now.toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}`,\n  '',\n  'ORGANIZATOR',\n  ...(contactName ? [`Osoba kontaktowa: ${contactName}`] : []),\n  `Firma/instytucja: ${strip(org.company)}`,\n  `Telefon: ${strip(org.phone)}`,\n  `E-mail: ${strip(org.email)}`,\n  '',\n  'WYDARZENIE',\n  `Typ: ${(body.eventTypes || []).map(strip).join(', ') || 'nie podano'}`,\n  ...(occasion ? [`Okazja: ${occasion}`] : []),\n  ...(programs.length ? [`Program: ${programs.join(', ')}`] : []),\n  `Data: ${dateDDMM || 'nie podano'}`,\n  `Miejscowość: ${city}${strip(body.event?.postalCode) ? ', ' + strip(body.event?.postalCode) : ''}`,\n  `Województwo: ${strip(body.event?.voivodeship) || 'nie podano'}`,\n  `Miejsce: ${strip(body.event?.venueType) || 'nie podano'}`,\n  `Budżet: ${strip(body.budget) || 'nie podano'}`,\n  '',\n  'WYBRANI ARTYSCI (zapytanie o dostepnosc)',\n  ...(artists.length ? artists.map((a, i) => `${i + 1}. ${a.name}${a.price ? ' (orientacyjnie ' + a.price + ')' : ''}${a.busy ? ' — UWAGA: ZAJETY TERMIN, nie wysylac zapytania' : ''}`) : ['brak']),\n];\nif (custom.length) {\n  lines.push('', 'ARTYSCI SPOZA BAZY (do weryfikacji)');\n  custom.forEach((n, i) => lines.push(`${i + 1}. ${n}`));\n}\nlines.push('', `STYLE: ${stylesStr}`);\nif (strip(body.message)) lines.push('', 'WIADOMOSC:', strip(body.message));\n\nreturn [{ json: {\n  title,\n  comments: lines.join('\\n'),\n  company: strip(org.company), phone: strip(org.phone), email: strip(org.email).toLowerCase(),\n  contactName, firstName, lastName, leadId,\n  eventTypes: (body.eventTypes || []).map(strip), budget: strip(body.budget),\n  styles, stylesStr,\n  programs, programsStr: programs.join(', '), occasion,\n  artistNames: artists.map((a) => a.name), customArtists: custom,\n  eventDate: dISO, dateDDMM, city,\n  postalCode: strip(body.event?.postalCode), voivodeship: strip(body.event?.voivodeship),\n  venueType: strip(body.event?.venueType),\n  message: strip(body.message),\n} }];"
       },
       "id": "code-1",
       "name": "Walidacja i normalizacja",
@@ -205,7 +205,7 @@
         "url": "={{ $env.BITRIX24_REST_URL_ANATOL }}/crm.contact.add.json",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ fields: {\n  NAME: $('Walidacja i normalizacja').first().json.company,\n  SOURCE_ID: 'WEB',\n  COMMENTS: 'Kontakt z aplikacji Generator zapytan',\n  PHONE: [{ VALUE: $('Walidacja i normalizacja').first().json.phone, VALUE_TYPE: 'WORK' }],\n  EMAIL: [{ VALUE: $('Walidacja i normalizacja').first().json.email, VALUE_TYPE: 'WORK' }]\n} }) }}",
+        "jsonBody": "={{ JSON.stringify({ fields: {\n  NAME: $('Walidacja i normalizacja').first().json.firstName,\n  LAST_NAME: $('Walidacja i normalizacja').first().json.lastName,\n  COMPANY_TITLE: $('Walidacja i normalizacja').first().json.company,\n  SOURCE_ID: 'WEB',\n  COMMENTS: 'Kontakt z aplikacji Generator zapytan',\n  PHONE: [{ VALUE: $('Walidacja i normalizacja').first().json.phone, VALUE_TYPE: 'WORK' }],\n  EMAIL: [{ VALUE: $('Walidacja i normalizacja').first().json.email, VALUE_TYPE: 'WORK' }]\n} }) }}",
         "options": {}
       },
       "id": "bx-cadd",
@@ -389,6 +389,156 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zapytania-app-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        500
+      ],
+      "name": "Webhook lead",
+      "webhookId": "zapytania-app-lead-wh"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Auth + walidacja leada (rejestracja w aplikacji cennik)\nconst headers = $input.first().json.headers || {};\nconst body = $input.first().json.body || {};\nif (!$env.INQUIRY_SHARED_TOKEN || headers['x-inquiry-token'] !== $env.INQUIRY_SHARED_TOKEN) {\n  return [{ json: { _error: 'auth' } }];\n}\nconst strip = (s) => String(s ?? '').replace(/[\\u{10000}-\\u{10FFFF}]/gu, '').replace(/[\\u2600-\\u27BF\\u2B00-\\u2BFF\\uFE0F\\u200D]/g, '').trim();\nconst o = body.organizer || {};\nconst name = strip(o.name), company = strip(o.company), email = strip(o.email).toLowerCase(), phone = strip(o.phone);\nif (!name || !email) return [{ json: { _error: 'validation' } }];\nconst parts = name.split(/\\s+/).filter(Boolean);\nreturn [{ json: { name, firstName: parts[0] || company, lastName: parts.slice(1).join(' '), company, email, phone } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        500
+      ],
+      "name": "Lead: walidacja"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        40,
+        500
+      ],
+      "name": "IF lead poprawny"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BITRIX24_REST_URL_ANATOL }}/crm.lead.add.json",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fields: {\n  TITLE: 'Cennik artystów: ' + $json.name + ' (' + $json.company + ')',\n  NAME: $json.firstName,\n  LAST_NAME: $json.lastName,\n  COMPANY_TITLE: $json.company,\n  SOURCE_ID: 'WEB',\n  ASSIGNED_BY_ID: 19,\n  COMMENTS: 'Rejestracja w aplikacji cennik.impresariatkoncertowy.pl — zapytanie jeszcze nie wyslane. Jesli status nie zmieni sie na CONVERTED, organizator porzucil formularz — warto oddzwonic.',\n  PHONE: $json.phone ? [{ VALUE: $json.phone, VALUE_TYPE: 'WORK' }] : [],\n  EMAIL: [{ VALUE: $json.email, VALUE_TYPE: 'WORK' }]\n} }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        420
+      ],
+      "name": "Bitrix: crm.lead.add"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, leadId: $json.result || null } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        420
+      ],
+      "name": "Respond lead"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false } }}",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        260,
+        600
+      ],
+      "name": "Respond lead błąd"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BITRIX24_REST_URL_ANATOL }}/crm.lead.update.json",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ id: $('Walidacja i normalizacja').first().json.leadId, fields: {\n  STATUS_ID: 'CONVERTED',\n  COMMENTS: 'Zapytanie wyslane — przeksztalcone w deal #' + $('Bitrix: crm.deal.add').first().json.result\n} }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2380,
+        -80
+      ],
+      "name": "Bitrix: lead skonwertowany",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Walidacja i normalizacja').first().json.email }}",
+        "subject": "={{ 'Dziękuję za zapytanie — ' + ($('Walidacja i normalizacja').first().json.artistNames.concat($('Walidacja i normalizacja').first().json.customArtists).join(', ') || 'dobór artystów') + ' | Impresariat Koncertowy' }}",
+        "emailType": "text",
+        "message": "={{ (() => {\nconst w = $('Walidacja i normalizacja').first().json;\nconst artists = w.artistNames.concat(w.customArtists);\nconst L = [];\nL.push('Dzień dobry' + (w.firstName ? ' ' + w.firstName : '') + ',');\nL.push('');\nL.push('dziękuję za zapytanie wysłane przez nasz cennik artystów. Otrzymałam następujące informacje:');\nL.push('');\nif (w.eventTypes.length) L.push('- Rodzaj wydarzenia: ' + w.eventTypes.join(', '));\nif (w.occasion) L.push('- Okazja: ' + w.occasion);\nif (w.programsStr) L.push('- Program: ' + w.programsStr);\nL.push('- Termin: ' + (w.dateDDMM || 'do ustalenia'));\nif (w.city && w.city !== 'miejscowosc nieznana') L.push('- Miejscowość: ' + w.city);\nL.push('- Wybrani artyści: ' + (artists.join(', ') || 'dobierzemy propozycje'));\nif (w.budget && w.budget !== 'nie określono') L.push('- Budżet: ' + w.budget);\nL.push('');\nL.push('Sprawdzam teraz dostępność wykonawców w podanym terminie i wrócę z konkretną ofertą.');\nL.push('');\nL.push('Jeśli chcieliby Państwo coś doprecyzować, wystarczy odpowiedzieć na tę wiadomość.');\nL.push('');\nL.push('Pozdrawiam serdecznie');\nL.push('Joanna');\nL.push('Impresariat Koncertowy');\nL.push('https://impresariatkoncertowy.pl');\nreturn L.join('\\n');\n})() }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2580,
+        60
+      ],
+      "name": "Email: potwierdzenie od Joanny",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "J4kCjpDOEgI30vo7",
+          "name": "Joanna.k@impresariatkoncertowy.pl"
+        }
+      }
     }
   ],
   "connections": {
@@ -539,6 +689,79 @@
       ]
     },
     "Airtable: dopisz Deal ID": {
+      "main": [
+        [
+          {
+            "node": "Bitrix: lead skonwertowany",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook lead": {
+      "main": [
+        [
+          {
+            "node": "Lead: walidacja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead: walidacja": {
+      "main": [
+        [
+          {
+            "node": "IF lead poprawny",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF lead poprawny": {
+      "main": [
+        [
+          {
+            "node": "Bitrix: crm.lead.add",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond lead błąd",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitrix: crm.lead.add": {
+      "main": [
+        [
+          {
+            "node": "Respond lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitrix: lead skonwertowany": {
+      "main": [
+        [
+          {
+            "node": "Email: potwierdzenie od Joanny",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email: potwierdzenie od Joanny": {
       "main": [
         [
           {

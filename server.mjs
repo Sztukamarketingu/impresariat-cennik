@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, normalize } from 'node:path';
 import { getCatalog, getBusyIds } from './lib/airtable.mjs';
 import { getPhoto, REC_ID_RE } from './lib/photos.mjs';
-import { handleInquiry } from './lib/inquiry.mjs';
+import { handleInquiry, handleLead } from './lib/inquiry.mjs';
 
 const DIR = dirname(fileURLToPath(import.meta.url));
 const PUBLIC = join(DIR, 'public');
@@ -81,6 +81,14 @@ const server = createServer(async (req, res) => {
       const photo = await getPhoto(recId);
       if (photo) return send(res, 200, photo.buf, { 'Content-Type': photo.mime, 'Cache-Control': `public, max-age=${photo.maxAge}` });
       return send(res, 200, PLACEHOLDER_SVG, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=3600' });
+    }
+
+    if (path === '/api/lead' && req.method === 'POST') {
+      let payload;
+      try { payload = JSON.parse(await readBody(req)); }
+      catch { return sendJson(res, 400, { ok: false }); }
+      const { status, body } = await handleLead(payload, { ip: clientIp(req) });
+      return sendJson(res, status, body);
     }
 
     if (path === '/api/inquiry' && req.method === 'POST') {

@@ -58,6 +58,11 @@
     <h2>Dane organizatora</h2>
     <p class="hint">Potrzebujemy ich, żeby wrócić do Ciebie z potwierdzeniem dostępności i ofertą.</p>
     <form id="organizer-form" class="form-grid" novalidate>
+      <div class="field" data-field="contactName">
+        <label for="f-contact-name">Imię i nazwisko</label>
+        <input id="f-contact-name" name="contactName" type="text" autocomplete="name" placeholder="np. Anna Kowalska">
+        <span class="err">Podaj imię i nazwisko (min. 3 znaki).</span>
+      </div>
       <div class="field" data-field="company">
         <label for="f-company">Nazwa firmy / instytucji</label>
         <input id="f-company" name="company" type="text" autocomplete="organization" placeholder="np. Urząd Miasta, Dom Kultury, firma">
