@@ -1,0 +1,322 @@
+{
+  "artists": [
+    {
+      "id": "recMOCK0000000001",
+      "name": "Kapela Warasy",
+      "shortDescription": "Energetyczna kapela folkowa — biesiadne brzmienie góralskie, które porywa publiczność w każdym wieku.",
+      "description": "Kapela Warasy to energetyczny zespół folkowy łączący tradycyjne brzmienia góralskie z nowoczesną aranżacją. Od lat rozgrzewają publiczność dożynek, dni miast i festynów w całej Polsce. W repertuarze zarówno klasyka biesiady, jak i autorskie utwory.",
+      "styles": [
+        "Folk",
+        "Biesiada"
+      ],
+      "eventTypes": [
+        "Impreza plenerowa",
+        "Impreza okolicznościowa"
+      ],
+      "priceRange": {
+        "from": 7000,
+        "to": 10000,
+        "label": "7 000 – 10 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": "https://impresariatkoncertowy.pl/wykonawcy/kapela-warasy",
+      "youtube": [
+        "https://www.youtube.com/watch?v=przyklad1"
+      ],
+      "priority": 5,
+      "programs": []
+    },
+    {
+      "id": "recMOCK0000000002",
+      "name": "Edyta Górniak",
+      "shortDescription": "Jedna z najwybitniejszych polskich wokalistek — niezapomniane koncerty pop z wielkimi przebojami.",
+      "description": "Edyta Górniak to ikona polskiej sceny muzycznej. Jej koncerty to gwarancja najwyższego poziomu artystycznego — od wielkich przebojów po poruszające ballady. Idealna gwiazda wieczoru na dni miast i gale firmowe.",
+      "styles": [
+        "Pop"
+      ],
+      "eventTypes": [
+        "Impreza plenerowa",
+        "Impreza firmowa",
+        "Koncert tematyczny"
+      ],
+      "priceRange": {
+        "from": 40000,
+        "to": 50000,
+        "label": "40 000 – 50 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [
+        "https://www.youtube.com/watch?v=przyklad2",
+        "https://www.youtube.com/watch?v=przyklad2b"
+      ],
+      "priority": 10,
+      "programs": [
+        "Koncert kolęd"
+      ]
+    },
+    {
+      "id": "recMOCK0000000003",
+      "name": "Zespół Milano",
+      "shortDescription": "Gwiazda disco polo — taneczne hity, które znają wszyscy. Świetny wybór na imprezy plenerowe.",
+      "description": "Zespół Milano to jeden z najbardziej rozpoznawalnych wykonawców disco polo. Ich taneczne hity porywają publiczność na dożynkach, dniach miast i festynach. Profesjonalna oprawa sceniczna i sprawdzony kontakt z publicznością.",
+      "styles": [
+        "Disco Polo"
+      ],
+      "eventTypes": [
+        "Impreza plenerowa",
+        "Impreza okolicznościowa"
+      ],
+      "priceRange": {
+        "from": 12000,
+        "to": 16000,
+        "label": "12 000 – 16 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [
+        "https://www.youtube.com/watch?v=przyklad3"
+      ],
+      "priority": 7,
+      "programs": []
+    },
+    {
+      "id": "recMOCK0000000004",
+      "name": "Kabaret Pod Napięciem",
+      "shortDescription": "Dwie godziny śmiechu — sprawdzony program kabaretowy na eventy firmowe i wydarzenia kulturalne.",
+      "description": "Kabaret Pod Napięciem od kilkunastu lat rozśmiesza publiczność w całej Polsce. Program dopasowany do charakteru wydarzenia — od imprez firmowych po wieczory kulturalne w domach kultury.",
+      "styles": [
+        "Kabaret"
+      ],
+      "eventTypes": [
+        "Impreza firmowa",
+        "Wydarzenie kulturalne"
+      ],
+      "priceRange": {
+        "from": 15000,
+        "to": 20000,
+        "label": "15 000 – 20 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [],
+      "priority": 4,
+      "programs": []
+    },
+    {
+      "id": "recMOCK0000000005",
+      "name": "Andrzej Rybiński",
+      "shortDescription": "Legenda polskiej piosenki — „Nie liczę godzin i lat” i inne przeboje w koncertowej odsłonie.",
+      "description": "Andrzej Rybiński to artysta, którego przeboje zna kilka pokoleń Polaków. Jego recitale to podróż przez największe hity polskiej piosenki — idealne na dni miast, koncerty plenerowe i wydarzenia okolicznościowe.",
+      "styles": [
+        "Pop"
+      ],
+      "eventTypes": [
+        "Impreza plenerowa",
+        "Wydarzenie kulturalne",
+        "Koncert tematyczny"
+      ],
+      "priceRange": {
+        "from": 20000,
+        "to": 25000,
+        "label": "20 000 – 25 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [
+        "https://www.youtube.com/watch?v=przyklad5"
+      ],
+      "priority": 6,
+      "programs": [
+        "Koncert noworoczny"
+      ]
+    },
+    {
+      "id": "recMOCK0000000006",
+      "name": "Rock Station",
+      "shortDescription": "Covery największych hitów rocka — mocne, koncertowe brzmienie na imprezy plenerowe i firmowe.",
+      "description": "Rock Station to zespół coverowy grający największe przeboje polskiego i światowego rocka. Pełne, koncertowe brzmienie, profesjonalny backline i energia, która stawia publiczność na nogi.",
+      "styles": [
+        "Rock"
+      ],
+      "eventTypes": [
+        "Impreza plenerowa",
+        "Impreza firmowa"
+      ],
+      "priceRange": {
+        "from": 9000,
+        "to": 13000,
+        "label": "9 000 – 13 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [
+        "https://www.youtube.com/watch?v=przyklad6"
+      ],
+      "priority": 3,
+      "programs": []
+    },
+    {
+      "id": "recMOCK0000000007",
+      "name": "Artur Barciś",
+      "shortDescription": "Znakomity aktor — spotkania autorskie, czytanie z aktorem i wieczory teatralne.",
+      "description": "Artur Barciś to jeden z najbardziej lubianych polskich aktorów. Spotkania autorskie, wieczory poezji i czytanie z aktorem w jego wykonaniu to wydarzenia kulturalne najwyższej próby — idealne dla bibliotek, domów kultury i spotkań seniorów.",
+      "styles": [
+        "Aktor / wydarzenie kulturalne"
+      ],
+      "eventTypes": [
+        "Wydarzenie kulturalne"
+      ],
+      "priceRange": {
+        "from": 6000,
+        "to": 9000,
+        "label": "6 000 – 9 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [],
+      "priority": 5,
+      "programs": []
+    },
+    {
+      "id": "recMOCK0000000008",
+      "name": "Chór Gospel Radość",
+      "shortDescription": "Koncerty kolęd i muzyki gospel — wzruszające widowisko na święta i koncerty tematyczne.",
+      "description": "Chór Gospel Radość tworzy kilkunastoosobowy skład wokalny z sekcją instrumentalną. Koncerty kolęd, koncerty noworoczne i widowiska gospel, które zostają w pamięci publiczności na długo.",
+      "styles": [
+        "Koncert tematyczny"
+      ],
+      "eventTypes": [
+        "Koncert tematyczny",
+        "Wydarzenie kulturalne"
+      ],
+      "priceRange": {
+        "from": 8000,
+        "to": 12000,
+        "label": "8 000 – 12 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [
+        "https://www.youtube.com/watch?v=przyklad8"
+      ],
+      "priority": 2,
+      "programs": [
+        "Koncert patriotyczny"
+      ]
+    },
+    {
+      "id": "recMOCK0000000009",
+      "name": "Maja Hyży",
+      "shortDescription": "Charyzmatyczna wokalistka pop — koncerty pełne energii na dni miast i eventy firmowe.",
+      "description": "Maja Hyży to wokalistka z ogromną sceniczną energią. Jej koncerty łączą autorskie utwory z największymi przebojami pop — sprawdzony wybór na imprezy plenerowe i firmowe.",
+      "styles": [
+        "Pop"
+      ],
+      "eventTypes": [
+        "Impreza plenerowa",
+        "Impreza firmowa"
+      ],
+      "priceRange": {
+        "from": 11000,
+        "to": 14000,
+        "label": "11 000 – 14 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [
+        "https://www.youtube.com/watch?v=przyklad9"
+      ],
+      "priority": 6,
+      "programs": []
+    },
+    {
+      "id": "recMOCK0000000010",
+      "name": "Biesiada Śląska",
+      "shortDescription": "Widowisko biesiadne z humorem i muzyką na żywo — hit imprez plenerowych i okolicznościowych.",
+      "description": "Biesiada Śląska to widowisko muzyczno-kabaretowe, które łączy śląski humor z biesiadnymi szlagierami. Publiczność śpiewa razem z artystami od pierwszej piosenki.",
+      "styles": [
+        "Biesiada",
+        "Folk"
+      ],
+      "eventTypes": [
+        "Impreza plenerowa",
+        "Impreza okolicznościowa"
+      ],
+      "priceRange": {
+        "from": null,
+        "to": null,
+        "label": "wycena indywidualna"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [],
+      "priority": 1,
+      "programs": []
+    },
+    {
+      "id": "recMOCK0000000011",
+      "name": "Gosia Andrzejewicz",
+      "shortDescription": "Gwiazda pop z przebojami, które śpiewa cała Polska — świetna na koncerty plenerowe.",
+      "description": "Gosia Andrzejewicz to wokalistka, której hity zna cała Polska. Koncert pełen tanecznych rytmów i pozytywnej energii — sprawdzony punkt programu dni miast i festynów.",
+      "styles": [
+        "Pop",
+        "Disco Polo"
+      ],
+      "eventTypes": [
+        "Impreza plenerowa",
+        "Impreza okolicznościowa"
+      ],
+      "priceRange": {
+        "from": 10000,
+        "to": 13000,
+        "label": "10 000 – 13 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [
+        "https://www.youtube.com/watch?v=przyklad11"
+      ],
+      "priority": 5,
+      "programs": []
+    },
+    {
+      "id": "recMOCK0000000012",
+      "name": "Orkiestra Świątecznych Brzmień",
+      "shortDescription": "Koncert kolęd i pastorałek w symfonicznej aranżacji — magia świąt na scenie.",
+      "description": "Orkiestra Świątecznych Brzmień wykonuje kolędy, pastorałki i świąteczne standardy w pełnych, symfonicznych aranżacjach. Widowisko idealne na koncerty noworoczne i świąteczne wydarzenia miejskie.",
+      "styles": [
+        "Koncert tematyczny"
+      ],
+      "eventTypes": [
+        "Koncert tematyczny",
+        "Wydarzenie kulturalne"
+      ],
+      "priceRange": {
+        "from": 18000,
+        "to": 24000,
+        "label": "18 000 – 24 000 zł"
+      },
+      "hasPhoto": false,
+      "photoUrl": "/placeholder.svg",
+      "pageUrl": null,
+      "youtube": [],
+      "priority": 2,
+      "programs": [
+        "Koncert kolęd",
+        "Koncert noworoczny"
+      ]
+    }
+  ]
+}

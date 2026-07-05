@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprawdź dostępność artystów — Impresariat Koncertowy</title>
+<meta name="description" content="Wybierz artystów na swoje wydarzenie i wyślij zapytanie o dostępność. Impresariat Koncertowy.">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="/logo.png">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MN652H7DZM"></script>
+</head>
+<body>
+<div class="container">
+
+  <header class="site-header">
+    <img src="/logo.png" alt="Impresariat Koncertowy">
+    <span class="brand">Zapytanie o dostępność artystów</span>
+  </header>
+
+  <div class="progress" id="progress" hidden aria-hidden="true"></div>
+  <div class="progress-label" id="progress-label" hidden></div>
+
+  <!-- ====== 1. LANDING ====== -->
+  <section data-view="landing" class="active">
+    <div class="landing">
+      <h1>Sprawdź dostępność artystów na&nbsp;Twoje wydarzenie</h1>
+      <p class="lead">Dni miasta, event firmowy, jubileusz czy koncert kolęd — wybierz wykonawców z naszej bazy, a my potwierdzimy ich dostępność i przygotujemy ofertę.</p>
+      <div class="steps-how">
+        <div class="how"><span class="num">1</span><b>Opowiedz o wydarzeniu</b>Podaj dane kontaktowe i rodzaj imprezy.</div>
+        <div class="how"><span class="num">2</span><b>Wybierz artystów</b>Przeglądaj katalog z orientacyjnymi cenami i dodaj wykonawców do zapytania.</div>
+        <div class="how"><span class="num">3</span><b>Wyślij zapytanie</b>Sprawdzimy dostępność i wrócimy do Ciebie ze szczegółową ofertą.</div>
+      </div>
+      <button class="btn btn-primary" data-action="start">Rozpocznij</button>
+      <div class="landing-gallery" id="landing-gallery" hidden>
+        <h2>Współpracujemy m.in. z</h2>
+        <div class="gallery-grid" id="gallery-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 2. DANE ORGANIZATORA ====== -->
+  <section data-view="organizer">
+    <h2>Dane organizatora</h2>
+    <p class="hint">Potrzebujemy ich, żeby wrócić do Ciebie z potwierdzeniem dostępności i ofertą.</p>
+    <form id="organizer-form" class="form-grid" novalidate>
+      <div class="field" data-field="company">
+        <label for="f-company">Nazwa firmy / instytucji</label>
+        <input id="f-company" name="company" type="text" autocomplete="organization" placeholder="np. Urząd Miasta, Dom Kultury, firma">
+        <span class="err">Podaj nazwę firmy lub instytucji (min. 2 znaki).</span>
+      </div>
+      <div class="field" data-field="phone">
+        <label for="f-phone">Numer telefonu</label>
+        <input id="f-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="np. 601 234 567">
+        <span class="err">Podaj poprawny numer telefonu (9 cyfr).</span>
+      </div>
+      <div class="field" data-field="email">
+        <label for="f-email">Adres e-mail</label>
+        <input id="f-email" name="email" type="email" autocomplete="email" placeholder="np. kontakt@twojafirma.pl">
+        <span class="err">Podaj poprawny adres e-mail.</span>
+      </div>
+      <div class="hp-field" aria-hidden="true">
+        <label for="f-website">Strona www (zostaw puste)</label>
+        <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+    </form>
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back">Wstecz</button>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" data-action="organizer-next">Dalej</button>
+    </div>
+  </section>
+
+  <!-- ====== 2b. TERMIN WYDARZENIA ====== -->
+  <section data-view="termin">
+    <h2>Kiedy planujesz wydarzenie?</h2>
+    <p class="hint">Jeśli podasz termin, pokażemy tylko artystów, którzy mogą być w tym dniu dostępni. Termin możesz później zmienić.</p>
+    <div class="field" style="max-width:300px;">
+      <label for="f-date0">Data wydarzenia</label>
+      <input id="f-date0" name="date0" type="date">
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back">Wstecz</button>
+      <span class="spacer"></span>
+      <button class="btn btn-secondary" data-action="termin-skip">Jeszcze nie znam terminu</button>
+      <button class="btn btn-primary" data-action="termin-next">Dalej</button>
+    </div>
+  </section>
+
+  <!-- ====== 3. WYBÓR ŚCIEŻKI ====== -->
+  <section data-view="path">
+    <h2>Jak chcesz wybrać artystów?</h2>
+    <p class="hint">Oba sposoby prowadzą do tego samego katalogu — kreator po prostu ustawi filtry za Ciebie.</p>
+    <div class="tile-grid big" id="path-tiles"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back">Wstecz</button>
+    </div>
+  </section>
+
+  <!-- ====== 4a. KREATOR: TYP WYDARZENIA ====== -->
+  <section data-view="kreator-typ">
+    <h2>Jakie wydarzenie organizujesz?</h2>
+    <p class="hint">Możesz zaznaczyć kilka opcji.</p>
+    <div class="tile-grid" id="event-type-tiles"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back">Wstecz</button>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" data-action="next">Dalej</button>
+    </div>
+  </section>
+
+  <!-- ====== 4a2. KREATOR: OKAZJA (tylko impreza okolicznościowa) ====== -->
+  <section data-view="kreator-okazja">
+    <h2>Jaka to okazja?</h2>
+    <p class="hint">Dzięki temu lepiej dopasujemy repertuar i charakter występu.</p>
+    <div class="tile-grid" id="occasion-tiles"></div>
+    <div class="field" id="occasion-other-field" hidden style="margin-top:14px;">
+      <label for="f-occasion-other">Wpisz swoją okazję</label>
+      <input id="f-occasion-other" type="text" maxlength="100" placeholder="np. 25-lecie firmy, komunia, rocznica ślubu">
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back">Wstecz</button>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" data-action="next">Dalej</button>
+    </div>
+  </section>
+
+  <!-- ====== 4a3. KREATOR: PROGRAM (tylko koncert tematyczny) ====== -->
+  <section data-view="kreator-program">
+    <h2>Jaki program Cię interesuje?</h2>
+    <p class="hint">Możesz zaznaczyć kilka — albo nic, żeby zobaczyć wszystkie koncerty tematyczne.</p>
+    <div class="tile-grid" id="program-tiles"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back">Wstecz</button>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" data-action="next">Dalej</button>
+    </div>
+  </section>
+
+  <!-- ====== 4b. KREATOR: BUDŻET ====== -->
+  <section data-view="kreator-budzet">
+    <h2>Jaki budżet planujesz na artystę?</h2>
+    <p class="hint">Orientacyjnie — pomoże nam to dopasować propozycje.</p>
+    <div class="tile-grid" id="budget-tiles"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back">Wstecz</button>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" data-action="next">Dalej</button>
+    </div>
+  </section>
+
+  <!-- ====== 4c. KREATOR: STYL ====== -->
+  <section data-view="kreator-styl">
+    <h2>Jaki styl muzyczny Cię interesuje?</h2>
+    <p class="hint">Możesz zaznaczyć kilka — albo nic, żeby zobaczyć wszystkich artystów.</p>
+    <div class="tile-grid" id="style-tiles"></div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back">Wstecz</button>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" data-action="show-catalog">Pokaż artystów</button>
+    </div>
+  </section>
+
+  <!-- ====== 5. KATALOG ====== -->
+  <section data-view="katalog">
+    <div class="catalog-top">
+      <h2>Wybierz artystów do zapytania</h2>
+      <p class="hint">Kliknij kafelek, żeby zobaczyć opis, materiały wideo i szczegóły.</p>
+      <p class="hint" id="catalog-count"></p>
+    </div>
+
+    <div class="search-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search-input" type="search" placeholder="Szukaj wykonawcy po nazwie…" autocomplete="off">
+      <div class="search-suggest" id="search-suggest" hidden></div>
+    </div>
+
+    <div id="catalog-filters"></div>
+
+    <div class="disclaimer">
+      Obecność artysty na liście nie oznacza potwierdzonej dostępności w wybranym terminie.
+      Po wysłaniu zapytania skontaktujemy się z wykonawcami i potwierdzimy możliwość realizacji oraz cenę.
+    </div>
+
+    <div class="artist-grid" id="artist-grid"></div>
+    <div id="no-results"></div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back-to-path">Zmień sposób wyboru</button>
+    </div>
+  </section>
+
+  <!-- ====== 6. PODSUMOWANIE ====== -->
+  <section data-view="summary">
+    <h2>Twoje zapytanie</h2>
+    <p class="summary-meta" id="summary-meta"></p>
+
+    <h3 style="font-size:17px;margin-bottom:4px;">Wybrani artyści</h3>
+    <div class="summary-list" id="summary-artists"></div>
+    <div id="busy-warning"></div>
+    <button class="btn-link" data-action="back-to-catalog">+ dodaj kolejnych artystów</button>
+
+    <form id="event-form" class="form-grid" style="margin-top:22px;" novalidate>
+      <div class="field">
+        <label for="f-date">Data wydarzenia (jeśli znana)</label>
+        <input id="f-date" name="date" type="date">
+      </div>
+      <div class="field">
+        <label for="f-city">Miejscowość</label>
+        <input id="f-city" name="city" type="text" placeholder="np. Kobiór">
+      </div>
+      <div class="field" data-field="postal">
+        <label for="f-postal">Kod pocztowy</label>
+        <input id="f-postal" name="postal" type="text" inputmode="numeric" placeholder="np. 43-210" maxlength="6">
+        <span class="err">Kod pocztowy w formacie 00-000.</span>
+      </div>
+      <div class="field">
+        <label for="f-voivodeship">Województwo</label>
+        <select id="f-voivodeship" name="voivodeship">
+          <option value="">— wybierz —</option>
+          <option>dolnośląskie</option>
+          <option>kujawsko-pomorskie</option>
+          <option>lubelskie</option>
+          <option>lubuskie</option>
+          <option>łódzkie</option>
+          <option>małopolskie</option>
+          <option>mazowieckie</option>
+          <option>opolskie</option>
+          <option>podkarpackie</option>
+          <option>podlaskie</option>
+          <option>pomorskie</option>
+          <option>śląskie</option>
+          <option>świętokrzyskie</option>
+          <option>warmińsko-mazurskie</option>
+          <option>wielkopolskie</option>
+          <option>zachodniopomorskie</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Miejsce wydarzenia</label>
+        <div class="chips" id="venue-chips"></div>
+      </div>
+      <div class="field">
+        <label for="f-message">Dodatkowe informacje (opcjonalnie)</label>
+        <textarea id="f-message" name="message" maxlength="2000" placeholder="np. charakter imprezy, godziny, oczekiwania…"></textarea>
+      </div>
+    </form>
+
+    <div class="form-error" id="submit-error"></div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" data-action="back-to-catalog">Wstecz</button>
+      <span class="spacer"></span>
+      <button class="btn btn-action" id="submit-btn" data-action="submit">Wyślij zapytanie o dostępność</button>
+    </div>
+  </section>
+
+  <!-- ====== 7. POTWIERDZENIE ====== -->
+  <section data-view="confirm">
+    <div class="confirm-box">
+      <div class="check">&#10003;</div>
+      <h2>Dziękujemy! Zapytanie zostało wysłane.</h2>
+      <p>Sprawdzimy dostępność wybranych artystów i skontaktujemy się z Tobą w najbliższym czasie.</p>
+      <p class="hint">Pamiętaj, że dostępność i cena wykonawców wymagają indywidualnego potwierdzenia.</p>
+      <p class="hint" id="confirm-custom" hidden>Wykonawców spoza naszej bazy dodatkowo zweryfikujemy — sprawdzimy dostępność i cenę i wrócimy z informacją.</p>
+      <button class="btn btn-secondary" data-action="restart" style="margin-top:18px;">Wyślij kolejne zapytanie</button>
+    </div>
+  </section>
+
+  <!-- sticky pasek wyboru -->
+  <div class="selection-bar" id="selection-bar">
+    <span class="count" id="selection-count"></span>
+    <button class="btn btn-primary" data-action="go-summary">Przejdź do zapytania</button>
+  </div>
+
+  <!-- modal artysty -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true" id="modal"></div>
+  </div>
+
+</div>
+<script src="/app.js"></script>
+</body>
+</html>

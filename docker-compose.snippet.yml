@@ -1,0 +1,19 @@
+# Fragment do wklejenia do /docker/openclaw-jb6z/docker-compose.yml (sekcja services:)
+# UWAGA: przed wklejeniem sprawdź istniejący plik compose (definicja sieci) i wolny port:
+#   ss -tlnp | grep 8095
+# Env do /docker/openclaw-jb6z/.env: AIRTABLE_API_KEY (może już być), INQUIRY_SHARED_TOKEN.
+# Po zmianach: docker compose up -d --build zapytania   (NIE "restart" — nie czyta nowego .env)
+
+  zapytania:
+    build: /docker/zapytania-app
+    container_name: zapytania-app
+    restart: unless-stopped
+    ports:
+      - "8095:8080"
+    environment:
+      - AIRTABLE_API_KEY=${AIRTABLE_API_KEY}
+      - N8N_INQUIRY_WEBHOOK_URL=http://root-n8n-1:5678/webhook/zapytania-app
+      - INQUIRY_SHARED_TOKEN=${INQUIRY_SHARED_TOKEN}
+      - PHOTO_CACHE_DIR=/app/photo-cache
+    volumes:
+      - /docker/zapytania-app/photo-cache:/app/photo-cache

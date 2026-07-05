@@ -1,0 +1,495 @@
+{
+  "name": "[OC] Zapytania z aplikacji — Generator zapytan",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zapytania-app",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "zapytania-app"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Auth + walidacja + normalizacja + budowa TITLE/COMMENTS (BEZ EMOJI!)\nconst headers = $input.first().json.headers || {};\nconst body = $input.first().json.body || {};\n\nif (!process.env.INQUIRY_SHARED_TOKEN || headers['x-inquiry-token'] !== process.env.INQUIRY_SHARED_TOKEN) {\n  return [{ json: { _error: 'auth', _status: 403 } }];\n}\nconst org = body.organizer || {};\nif (!org.email || !org.company || (!Array.isArray(body.artists) || !body.artists.length) && (!Array.isArray(body.customArtists) || !body.customArtists.length)) {\n  return [{ json: { _error: 'validation', _status: 400 } }];\n}\n\n// defensywny strip emoji (Bitrix po cichu gubi pola z emoji)\nconst strip = (s) => String(s ?? '').replace(/[\\u{10000}-\\u{10FFFF}]/gu, '').replace(/[\\u2600-\\u27BF\\u2B00-\\u2BFF\\uFE0F\\u200D]/g, '').trim();\n\nconst city = strip(body.event?.city) || 'miejscowosc nieznana';\nlet dateDDMM = '';\nconst dISO = String(body.event?.date || '');\nif (/^\\d{4}-\\d{2}-\\d{2}$/.test(dISO)) { const [y, m, d] = dISO.split('-'); dateDDMM = `${d}.${m}.${y}`; }\nconst styles = (body.styles || []).map(strip).filter(Boolean);\nconst stylesStr = styles.join(', ') || 'rozne style';\nconst programs = (body.programs || []).map(strip).filter(Boolean);\nconst occasion = strip(body.occasion);\nconst artists = (body.artists || []).map((a) => ({ name: strip(a.name), price: strip(a.priceLabel), busy: !!a.busy }));\nconst custom = (body.customArtists || []).map(strip).filter(Boolean);\n\n// TITLE zgodny z regexem generatora ofert: Organizator: {miasto} {DD.MM.YYYY} — {gatunek} ({nazwa})\nconst title = `Organizator: ${city}${dateDDMM ? ' ' + dateDDMM : ''} — ${stylesStr} (${strip(org.company)})`;\n\nconst now = new Date();\nconst lines = [\n  'ZAPYTANIE Z APLIKACJI GENERATOR ZAPYTAN',\n  `Data zgloszenia: ${now.toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}`,\n  '',\n  'ORGANIZATOR',\n  `Firma/instytucja: ${strip(org.company)}`,\n  `Telefon: ${strip(org.phone)}`,\n  `E-mail: ${strip(org.email)}`,\n  '',\n  'WYDARZENIE',\n  `Typ: ${(body.eventTypes || []).map(strip).join(', ') || 'nie podano'}`,\n  ...(occasion ? [`Okazja: ${occasion}`] : []),\n  ...(programs.length ? [`Program: ${programs.join(', ')}`] : []),\n  `Data: ${dateDDMM || 'nie podano'}`,\n  `Miejscowość: ${city}${strip(body.event?.postalCode) ? ', ' + strip(body.event?.postalCode) : ''}`,\n  `Województwo: ${strip(body.event?.voivodeship) || 'nie podano'}`,\n  `Miejsce: ${strip(body.event?.venueType) || 'nie podano'}`,\n  `Budżet: ${strip(body.budget) || 'nie podano'}`,\n  '',\n  'WYBRANI ARTYSCI (zapytanie o dostepnosc)',\n  ...(artists.length ? artists.map((a, i) => `${i + 1}. ${a.name}${a.price ? ' (orientacyjnie ' + a.price + ')' : ''}${a.busy ? ' — UWAGA: ZAJETY TERMIN, nie wysylac zapytania' : ''}`) : ['brak']),\n];\nif (custom.length) {\n  lines.push('', 'ARTYSCI SPOZA BAZY (do weryfikacji)');\n  custom.forEach((n, i) => lines.push(`${i + 1}. ${n}`));\n}\nlines.push('', `STYLE: ${stylesStr}`);\nif (strip(body.message)) lines.push('', 'WIADOMOSC:', strip(body.message));\n\nreturn [{ json: {\n  title,\n  comments: lines.join('\\n'),\n  company: strip(org.company), phone: strip(org.phone), email: strip(org.email).toLowerCase(),\n  eventTypes: (body.eventTypes || []).map(strip), budget: strip(body.budget),\n  styles, stylesStr,\n  programs, programsStr: programs.join(', '), occasion,\n  artistNames: artists.map((a) => a.name), customArtists: custom,\n  eventDate: dISO, dateDDMM, city,\n  postalCode: strip(body.event?.postalCode), voivodeship: strip(body.event?.voivodeship),\n  venueType: strip(body.event?.venueType),\n  message: strip(body.message),\n} }];"
+      },
+      "id": "code-1",
+      "name": "Walidacja i normalizacja",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-valid",
+      "name": "IF poprawne",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app5NIUbshNL31ylr",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Zapytania z aplikacji",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Firma": "={{ $json.company }}",
+            "Telefon": "={{ $json.phone }}",
+            "Email": "={{ $json.email }}",
+            "Typy wydarzenia": "={{ $json.eventTypes }}",
+            "Budżet": "={{ $json.budget }}",
+            "Style": "={{ $json.stylesStr }}",
+            "Wybrani artyści": "={{ $json.artistNames.join(', ') }}",
+            "Artyści spoza bazy": "={{ $json.customArtists.join(', ') }}",
+            "Data wydarzenia": "={{ $json.eventDate }}",
+            "Miejscowość": "={{ $json.city }}",
+            "Rodzaj miejsca": "={{ $json.venueType }}",
+            "Wiadomość": "={{ $json.message }}",
+            "Status": "Nowe",
+            "Kod pocztowy": "={{ $json.postalCode }}",
+            "Województwo": "={{ $json.voivodeship }}",
+            "Programy": "={{ $json.programsStr }}",
+            "Okazja": "={{ $json.occasion }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "at-1",
+      "name": "Airtable: zapis zapytania",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        -100
+      ],
+      "notes": "Wymaga credentiala Airtable (ten sam co inne workflow) i tabeli 'Zapytania z aplikacji'."
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.BITRIX24_REST_URL_ANATOL }}/crm.duplicate.findbycomm.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "EMAIL"
+            },
+            {
+              "name": "values[]",
+              "value": "={{ $('Walidacja i normalizacja').first().json.email }}"
+            },
+            {
+              "name": "entity_type",
+              "value": "CONTACT"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bx-dup",
+      "name": "Bitrix: szukaj kontaktu po mailu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.result?.CONTACT?.length > 0 }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-contact",
+      "name": "IF kontakt istnieje",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cid",
+              "name": "contactId",
+              "value": "={{ $json.result.CONTACT[0] }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-cid",
+      "name": "Kontakt: istniejący",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1320,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BITRIX24_REST_URL_ANATOL }}/crm.contact.add.json",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fields: {\n  NAME: $('Walidacja i normalizacja').first().json.company,\n  SOURCE_ID: 'WEB',\n  COMMENTS: 'Kontakt z aplikacji Generator zapytan',\n  PHONE: [{ VALUE: $('Walidacja i normalizacja').first().json.phone, VALUE_TYPE: 'WORK' }],\n  EMAIL: [{ VALUE: $('Walidacja i normalizacja').first().json.email, VALUE_TYPE: 'WORK' }]\n} }) }}",
+        "options": {}
+      },
+      "id": "bx-cadd",
+      "name": "Kontakt: nowy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cid2",
+              "name": "contactId",
+              "value": "={{ $json.result }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-cid2",
+      "name": "Kontakt: nowy id",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BITRIX24_REST_URL_ANATOL }}/crm.deal.add.json",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fields: {\n  TITLE: $('Walidacja i normalizacja').first().json.title,\n  CATEGORY_ID: 9,\n  STAGE_ID: 'C9:NEW',\n  ASSIGNED_BY_ID: 19,\n  SOURCE_ID: 'WEB',\n  CONTACT_ID: $json.contactId,\n  COMMENTS: $('Walidacja i normalizacja').first().json.comments\n} }) }}",
+        "options": {}
+      },
+      "id": "bx-deal",
+      "name": "Bitrix: crm.deal.add",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.BITRIX24_REST_URL_ANATOL }}/crm.deal.get.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $json.result }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bx-verify",
+      "name": "Bitrix: weryfikacja COMMENTS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        -100
+      ],
+      "notes": "Zasada z CLAUDE.md: emoji po cichu kasuje pole. Jeśli result.COMMENTS puste -> alarm w logu (strip emoji jest podwójny, więc nie powinno wystąpić)."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.18.0.10:18790/hooks/agent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.HOOKS_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  agentId: 'intake',\n  message: 'Nowe zapytanie z aplikacji Generator zapytan. Deal #' + $json.result.ID + ': ' + $('Walidacja i normalizacja').first().json.city + ' ' + ($('Walidacja i normalizacja').first().json.dateDDMM || 'data nieznana') + ', budzet ' + ($('Walidacja i normalizacja').first().json.budget || 'nieokreslony') + ', artysci: ' + $('Walidacja i normalizacja').first().json.artistNames.join(', ') + ($('Walidacja i normalizacja').first().json.customArtists.length ? ' | spoza bazy: ' + $('Walidacja i normalizacja').first().json.customArtists.join(', ') : '') + '. Firma: ' + $('Walidacja i normalizacja').first().json.company + ', tel ' + $('Walidacja i normalizacja').first().json.phone + ', mail ' + $('Walidacja i normalizacja').first().json.email + '. Sprawdz deal w Bitrix i rozpocznij ustalanie dostepnosci.'\n}) }}",
+        "options": {}
+      },
+      "id": "hook-anatol",
+      "name": "Hook do Anatola (intake)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        -100
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "onError: continue — padniety hook nie gubi zapytania (jest w Airtable i Bitrix)."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, dealId: $('Bitrix: weryfikacja COMMENTS').first().json.result.ID }) }}",
+        "options": {}
+      },
+      "id": "resp-ok",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2420,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: $json._error }) }}",
+        "options": {
+          "responseCode": "={{ $json._status || 400 }}"
+        }
+      },
+      "id": "resp-err",
+      "name": "Respond błąd",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        160
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Walidacja i normalizacja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Walidacja i normalizacja": {
+      "main": [
+        [
+          {
+            "node": "IF poprawne",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF poprawne": {
+      "main": [
+        [
+          {
+            "node": "Airtable: zapis zapytania",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond błąd",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable: zapis zapytania": {
+      "main": [
+        [
+          {
+            "node": "Bitrix: szukaj kontaktu po mailu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitrix: szukaj kontaktu po mailu": {
+      "main": [
+        [
+          {
+            "node": "IF kontakt istnieje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF kontakt istnieje": {
+      "main": [
+        [
+          {
+            "node": "Kontakt: istniejący",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Kontakt: nowy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontakt: istniejący": {
+      "main": [
+        [
+          {
+            "node": "Bitrix: crm.deal.add",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontakt: nowy": {
+      "main": [
+        [
+          {
+            "node": "Kontakt: nowy id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kontakt: nowy id": {
+      "main": [
+        [
+          {
+            "node": "Bitrix: crm.deal.add",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitrix: crm.deal.add": {
+      "main": [
+        [
+          {
+            "node": "Bitrix: weryfikacja COMMENTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bitrix: weryfikacja COMMENTS": {
+      "main": [
+        [
+          {
+            "node": "Hook do Anatola (intake)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hook do Anatola (intake)": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

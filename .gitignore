@@ -1,0 +1,16 @@
+# sekrety i środowisko
+.env
+*.env.local
+
+# dane prywatne / wygenerowane lokalnie (podgląd na żywych danych)
+data/preview-artists.json
+public/photos-preview/
+photo-cache/
+
+# dokumentacja wewnętrzna (adresy VPS, topologia infry) — nie do publicznego repo
+PLAN.md
+
+# systemowe
+.DS_Store
+nohup.out
+node_modules/
