@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Auth + walidacja + normalizacja + budowa TITLE/COMMENTS (BEZ EMOJI!)\nconst headers = $input.first().json.headers || {};\nconst body = $input.first().json.body || {};\n\nif (!process.env.INQUIRY_SHARED_TOKEN || headers['x-inquiry-token'] !== process.env.INQUIRY_SHARED_TOKEN) {\n  return [{ json: { _error: 'auth', _status: 403 } }];\n}\nconst org = body.organizer || {};\nif (!org.email || !org.company || (!Array.isArray(body.artists) || !body.artists.length) && (!Array.isArray(body.customArtists) || !body.customArtists.length)) {\n  return [{ json: { _error: 'validation', _status: 400 } }];\n}\n\n// defensywny strip emoji (Bitrix po cichu gubi pola z emoji)\nconst strip = (s) => String(s ?? '').replace(/[\\u{10000}-\\u{10FFFF}]/gu, '').replace(/[\\u2600-\\u27BF\\u2B00-\\u2BFF\\uFE0F\\u200D]/g, '').trim();\n\nconst city = strip(body.event?.city) || 'miejscowosc nieznana';\nlet dateDDMM = '';\nconst dISO = String(body.event?.date || '');\nif (/^\\d{4}-\\d{2}-\\d{2}$/.test(dISO)) { const [y, m, d] = dISO.split('-'); dateDDMM = `${d}.${m}.${y}`; }\nconst styles = (body.styles || []).map(strip).filter(Boolean);\nconst stylesStr = styles.join(', ') || 'rozne style';\nconst programs = (body.programs || []).map(strip).filter(Boolean);\nconst occasion = strip(body.occasion);\nconst artists = (body.artists || []).map((a) => ({ name: strip(a.name), price: strip(a.priceLabel), busy: !!a.busy }));\nconst custom = (body.customArtists || []).map(strip).filter(Boolean);\n\n// TITLE zgodny z regexem generatora ofert: Organizator: {miasto} {DD.MM.YYYY} — {gatunek} ({nazwa})\nconst title = `Organizator: ${city}${dateDDMM ? ' ' + dateDDMM : ''} — ${stylesStr} (${strip(org.company)})`;\n\nconst now = new Date();\nconst lines = [\n  'ZAPYTANIE Z APLIKACJI GENERATOR ZAPYTAN',\n  `Data zgloszenia: ${now.toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}`,\n  '',\n  'ORGANIZATOR',\n  `Firma/instytucja: ${strip(org.company)}`,\n  `Telefon: ${strip(org.phone)}`,\n  `E-mail: ${strip(org.email)}`,\n  '',\n  'WYDARZENIE',\n  `Typ: ${(body.eventTypes || []).map(strip).join(', ') || 'nie podano'}`,\n  ...(occasion ? [`Okazja: ${occasion}`] : []),\n  ...(programs.length ? [`Program: ${programs.join(', ')}`] : []),\n  `Data: ${dateDDMM || 'nie podano'}`,\n  `Miejscowość: ${city}${strip(body.event?.postalCode) ? ', ' + strip(body.event?.postalCode) : ''}`,\n  `Województwo: ${strip(body.event?.voivodeship) || 'nie podano'}`,\n  `Miejsce: ${strip(body.event?.venueType) || 'nie podano'}`,\n  `Budżet: ${strip(body.budget) || 'nie podano'}`,\n  '',\n  'WYBRANI ARTYSCI (zapytanie o dostepnosc)',\n  ...(artists.length ? artists.map((a, i) => `${i + 1}. ${a.name}${a.price ? ' (orientacyjnie ' + a.price + ')' : ''}${a.busy ? ' — UWAGA: ZAJETY TERMIN, nie wysylac zapytania' : ''}`) : ['brak']),\n];\nif (custom.length) {\n  lines.push('', 'ARTYSCI SPOZA BAZY (do weryfikacji)');\n  custom.forEach((n, i) => lines.push(`${i + 1}. ${n}`));\n}\nlines.push('', `STYLE: ${stylesStr}`);\nif (strip(body.message)) lines.push('', 'WIADOMOSC:', strip(body.message));\n\nreturn [{ json: {\n  title,\n  comments: lines.join('\\n'),\n  company: strip(org.company), phone: strip(org.phone), email: strip(org.email).toLowerCase(),\n  eventTypes: (body.eventTypes || []).map(strip), budget: strip(body.budget),\n  styles, stylesStr,\n  programs, programsStr: programs.join(', '), occasion,\n  artistNames: artists.map((a) => a.name), customArtists: custom,\n  eventDate: dISO, dateDDMM, city,\n  postalCode: strip(body.event?.postalCode), voivodeship: strip(body.event?.voivodeship),\n  venueType: strip(body.event?.venueType),\n  message: strip(body.message),\n} }];"
+        "jsCode": "// Auth + walidacja + normalizacja + budowa TITLE/COMMENTS (BEZ EMOJI!)\nconst headers = $input.first().json.headers || {};\nconst body = $input.first().json.body || {};\n\nif (!$env.INQUIRY_SHARED_TOKEN || headers['x-inquiry-token'] !== $env.INQUIRY_SHARED_TOKEN) {\n  return [{ json: { _error: 'auth', _status: 403 } }];\n}\nconst org = body.organizer || {};\nif (!org.email || !org.company || (!Array.isArray(body.artists) || !body.artists.length) && (!Array.isArray(body.customArtists) || !body.customArtists.length)) {\n  return [{ json: { _error: 'validation', _status: 400 } }];\n}\n\n// defensywny strip emoji (Bitrix po cichu gubi pola z emoji)\nconst strip = (s) => String(s ?? '').replace(/[\\u{10000}-\\u{10FFFF}]/gu, '').replace(/[\\u2600-\\u27BF\\u2B00-\\u2BFF\\uFE0F\\u200D]/g, '').trim();\n\nconst city = strip(body.event?.city) || 'miejscowosc nieznana';\nlet dateDDMM = '';\nconst dISO = String(body.event?.date || '');\nif (/^\\d{4}-\\d{2}-\\d{2}$/.test(dISO)) { const [y, m, d] = dISO.split('-'); dateDDMM = `${d}.${m}.${y}`; }\nconst styles = (body.styles || []).map(strip).filter(Boolean);\nconst stylesStr = styles.join(', ') || 'rozne style';\nconst programs = (body.programs || []).map(strip).filter(Boolean);\nconst occasion = strip(body.occasion);\nconst artists = (body.artists || []).map((a) => ({ name: strip(a.name), price: strip(a.priceLabel), busy: !!a.busy }));\nconst custom = (body.customArtists || []).map(strip).filter(Boolean);\n\n// TITLE zgodny z regexem generatora ofert: Organizator: {miasto} {DD.MM.YYYY} — {gatunek} ({nazwa})\nconst title = `Organizator: ${city}${dateDDMM ? ' ' + dateDDMM : ''} — ${stylesStr} (${strip(org.company)})`;\n\nconst now = new Date();\nconst lines = [\n  'ZAPYTANIE Z APLIKACJI GENERATOR ZAPYTAN',\n  `Data zgloszenia: ${now.toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}`,\n  '',\n  'ORGANIZATOR',\n  `Firma/instytucja: ${strip(org.company)}`,\n  `Telefon: ${strip(org.phone)}`,\n  `E-mail: ${strip(org.email)}`,\n  '',\n  'WYDARZENIE',\n  `Typ: ${(body.eventTypes || []).map(strip).join(', ') || 'nie podano'}`,\n  ...(occasion ? [`Okazja: ${occasion}`] : []),\n  ...(programs.length ? [`Program: ${programs.join(', ')}`] : []),\n  `Data: ${dateDDMM || 'nie podano'}`,\n  `Miejscowość: ${city}${strip(body.event?.postalCode) ? ', ' + strip(body.event?.postalCode) : ''}`,\n  `Województwo: ${strip(body.event?.voivodeship) || 'nie podano'}`,\n  `Miejsce: ${strip(body.event?.venueType) || 'nie podano'}`,\n  `Budżet: ${strip(body.budget) || 'nie podano'}`,\n  '',\n  'WYBRANI ARTYSCI (zapytanie o dostepnosc)',\n  ...(artists.length ? artists.map((a, i) => `${i + 1}. ${a.name}${a.price ? ' (orientacyjnie ' + a.price + ')' : ''}${a.busy ? ' — UWAGA: ZAJETY TERMIN, nie wysylac zapytania' : ''}`) : ['brak']),\n];\nif (custom.length) {\n  lines.push('', 'ARTYSCI SPOZA BAZY (do weryfikacji)');\n  custom.forEach((n, i) => lines.push(`${i + 1}. ${n}`));\n}\nlines.push('', `STYLE: ${stylesStr}`);\nif (strip(body.message)) lines.push('', 'WIADOMOSC:', strip(body.message));\n\nreturn [{ json: {\n  title,\n  comments: lines.join('\\n'),\n  company: strip(org.company), phone: strip(org.phone), email: strip(org.email).toLowerCase(),\n  eventTypes: (body.eventTypes || []).map(strip), budget: strip(body.budget),\n  styles, stylesStr,\n  programs, programsStr: programs.join(', '), occasion,\n  artistNames: artists.map((a) => a.name), customArtists: custom,\n  eventDate: dISO, dateDDMM, city,\n  postalCode: strip(body.event?.postalCode), voivodeship: strip(body.event?.voivodeship),\n  venueType: strip(body.event?.venueType),\n  message: strip(body.message),\n} }];"
       },
       "id": "code-1",
       "name": "Walidacja i normalizacja",
@@ -81,22 +81,24 @@
             "Telefon": "={{ $json.phone }}",
             "Email": "={{ $json.email }}",
             "Typy wydarzenia": "={{ $json.eventTypes }}",
-            "Budżet": "={{ $json.budget }}",
+            "Budżet": "={{ $json.budget || null }}",
             "Style": "={{ $json.stylesStr }}",
             "Wybrani artyści": "={{ $json.artistNames.join(', ') }}",
             "Artyści spoza bazy": "={{ $json.customArtists.join(', ') }}",
-            "Data wydarzenia": "={{ $json.eventDate }}",
+            "Data wydarzenia": "={{ $json.eventDate || null }}",
             "Miejscowość": "={{ $json.city }}",
-            "Rodzaj miejsca": "={{ $json.venueType }}",
+            "Rodzaj miejsca": "={{ $json.venueType || null }}",
             "Wiadomość": "={{ $json.message }}",
             "Status": "Nowe",
             "Kod pocztowy": "={{ $json.postalCode }}",
-            "Województwo": "={{ $json.voivodeship }}",
+            "Województwo": "={{ $json.voivodeship || null }}",
             "Programy": "={{ $json.programsStr }}",
             "Okazja": "={{ $json.occasion }}"
           }
         },
-        "options": {}
+        "options": {
+          "typecast": true
+        }
       },
       "id": "at-1",
       "name": "Airtable: zapis zapytania",
@@ -106,7 +108,13 @@
         660,
         -100
       ],
-      "notes": "Wymaga credentiala Airtable (ten sam co inne workflow) i tabeli 'Zapytania z aplikacji'."
+      "notes": "Wymaga credentiala Airtable (ten sam co inne workflow) i tabeli 'Zapytania z aplikacji'.",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "aJDN5PJdRkGq3haz",
+          "name": "AT Impresariat"
+        }
+      }
     },
     {
       "parameters": {
@@ -338,6 +346,49 @@
         660,
         160
       ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app5NIUbshNL31ylr",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Zapytania z aplikacji",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Airtable: zapis zapytania').first().json.id }}",
+            "Deal ID": "={{ Number($('Bitrix: crm.deal.add').first().json.result) }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2180,
+        60
+      ],
+      "name": "Airtable: dopisz Deal ID",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "aJDN5PJdRkGq3haz",
+          "name": "AT Impresariat"
+        }
+      },
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -469,7 +520,7 @@
       "main": [
         [
           {
-            "node": "Hook do Anatola (intake)",
+            "node": "Airtable: dopisz Deal ID",
             "type": "main",
             "index": 0
           }
@@ -486,10 +537,22 @@
           }
         ]
       ]
+    },
+    "Airtable: dopisz Deal ID": {
+      "main": [
+        [
+          {
+            "node": "Hook do Anatola (intake)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
     "executionOrder": "v1"
   },
-  "active": false
+  "active": false,
+  "id": "ZapytaniaAppGen1"
 }
